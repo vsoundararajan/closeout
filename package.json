@@ -1,0 +1,24 @@
+{
+  "name": "closeout",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "express": "^4.14.0",
+    "jade": "^1.11.0",
+    "jquery": "^3.1.0",
+    "moment": "^2.14.1",
+    "node-uuid": "^1.4.7",
+    "react": "^15.3.1",
+    "react-bootstrap-date-picker": "^3.3.1",
+    "react-date-picker": "^5.3.28",
+    "react-datepicker": "^0.29.0",
+    "react-datetime": "^2.5.0"
+  }
+}

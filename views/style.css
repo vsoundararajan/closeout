@@ -1,0 +1,15 @@
+/* Styles go here */
+h1 {
+  text-align: center;
+  color: midnightblue;
+}
+
+div.row {
+  border: 0px 1px 1px 1px solid;
+  color: #9f3a38;
+}
+
+.well {
+  height: 60px;
+  border-radius: 10px;
+}
