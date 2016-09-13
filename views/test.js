@@ -1,8 +1,10 @@
 const Closeout = React.createClass({
   getInitialState: function(){
      var today = getToday();
+     var store = Data[0].name;
+     console.log("store = " + store);
      return {
-       selectedStore: "-----",
+       selectedStore: store,
        posted: 0.00,
        date: today,
        closeoutRows: [],
