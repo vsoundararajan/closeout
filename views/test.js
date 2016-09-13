@@ -1,9 +1,10 @@
 const Closeout = React.createClass({
   getInitialState: function(){
+     var today = getToday();
      return {
        selectedStore: "-----",
        posted: 0.00,
-       date: '',
+       date: today,
        closeoutRows: [],
        closeoutCurrentRow: {},
        denominations: []
@@ -12,12 +13,16 @@ const Closeout = React.createClass({
   postedChangeHandler: function(posted){
      this.state.posted = posted;
   },
+  closeoutDateChangeHandler: function(closeoutdate){
+     this.state.date = closeoutdate;
+     console.log('closeoutDateChangeHandler ==> ' + closeoutdate + " this.state.date = " + this.state.date);
+  },
   submitClickHandler: function(){
     console.log("submitClickHandler => " + printArr(this.state.denominations));
     var ttt = printArr(this.state.denominations);
     var temp = {store: this.state.selectedStore, posted: this.state.posted, denominations: this.state.denominations};
     this.setState( { closeoutCurrentRow: temp} );
-    var temp2 = {store: this.state.selectedStore, posted: this.state.posted, denominations: ttt};
+    var temp2 = {store: this.state.selectedStore, date: this.state.date, posted: this.state.posted, denominations: ttt};
     this.state.closeoutRows.push(temp2)
   },
   changeStoreHandler: function(event){
@@ -47,7 +52,7 @@ const Closeout = React.createClass({
                 </div>
               </div>
               <div className="col-md-3">
-                 Date: <input type="text"/>
+                 <CloseoutDateInput label="CloseoutDate" onChange={this.closeoutDateChangeHandler}/>
               </div>
               <div className="col-md-3">
                   <PostedCloseoutInput label="Posted:" onChange={this.postedChangeHandler}/>
@@ -84,7 +89,21 @@ const getSum = function (a){
   return sum;
 }
 
+const getToday = function (){
+  var today = new Date();
+  var dd = today.getDate();
+  var mm = today.getMonth()+1; //January is 0!
 
+  var yyyy = today.getFullYear();
+  if(dd<10){
+      dd='0'+dd
+  } 
+  if(mm<10){
+      mm='0'+mm
+  } 
+  var today = dd+'/'+mm+'/'+yyyy;
+  return today;
+}
 
 const Denominations = React.createClass({
    
@@ -197,7 +216,7 @@ const CloseoutTable = React.createClass({
            //var denomsStr = printArr(item.denominations);
            var denomsStr = item.denominations;
            return(
-              <CloseoutThs store={item.store} date="mm/dd/yyyy" posted={item.posted} counted="999.00" denominations={denomsStr} key={index}/>
+              <CloseoutThs store={item.store} date={item.date} posted={item.posted} denominations={denomsStr} key={index}/>
             );
       });
       return (
@@ -288,6 +307,31 @@ const PostedCloseoutInput = React.createClass({
         );
     },
 });
+
+
+const CloseoutDateInput = React.createClass({
+    getInitialState: function(){
+      var today = getToday();
+      return(
+          {
+            Date: today
+          }
+        );
+    },
+    handleChange: function(event){
+      this.setState({Date: event.target.value});
+      this.props.onChange(event.target.value);
+    },
+    render: function(){
+        return(
+            <div class="input-group">
+                <span class="input-group-addon">{this.props.label}</span>
+                <input type="text" class="form-control" placeholder="close out date" value={this.state.date} onChange={this.handleChange}/>
+            </div>
+        );
+    },
+});
+
 
 const StoreList = React.createClass({
     render: function(){
