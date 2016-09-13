@@ -3,6 +3,7 @@ const Closeout = React.createClass({
      return {
        selectedStore: "-----",
        posted: 0.00,
+       date: '',
        closeoutRows: [],
        closeoutCurrentRow: {},
        denominations: []
@@ -12,16 +13,18 @@ const Closeout = React.createClass({
      this.state.posted = posted;
   },
   submitClickHandler: function(){
-    var temp = {store: this.state.selectedStore, posted: this.state.posted, denomoinations: this.state.denominations};
+    console.log("submitClickHandler => " + printArr(this.state.denominations));
+    var ttt = printArr(this.state.denominations);
+    var temp = {store: this.state.selectedStore, posted: this.state.posted, denominations: this.state.denominations};
     this.setState( { closeoutCurrentRow: temp} );
-    var closeoutRowsTmp = this.state.closeoutRows;
-    closeoutRowsTmp.push(temp);
-    this.setState( { closeoutRows: closeoutRowsTmp});
+    var temp2 = {store: this.state.selectedStore, posted: this.state.posted, denominations: ttt};
+    this.state.closeoutRows.push(temp2)
   },
   changeStoreHandler: function(event){
     this.setState({ selectedStore: event.target.value});
   },
   denominationsChangeHandler: function(denoms){
+     console.log("denominationsChangeHandler => " + printArr(denoms));
      this.setState( {denominations: denoms });
   },
   render: function(){
@@ -33,7 +36,7 @@ const Closeout = React.createClass({
     return(
         <div className="container">
           <div className="row">
-              <div className="col-md-4">
+              <div className="col-md-3">
                 <div>
                   <span>Select a store:</span>
                   <select class="selectpicker" onChange={this.changeStoreHandler}>
@@ -41,17 +44,22 @@ const Closeout = React.createClass({
                             {stores}
                       </optgroup>
                   </select>
+                </div>
               </div>
+              <div className="col-md-3">
+                 Date: <input type="text"/>
               </div>
-              <div className="col-md-4">
+              <div className="col-md-3">
                   <PostedCloseoutInput label="Posted:" onChange={this.postedChangeHandler}/>
               </div>
-              <div className="col-md-4">
+              <div className="col-md-3">
                   <button onClick={this.submitClickHandler}>Submit</button>
               </div>                
           </div>
           <hr/> 
-          <Denominations onChange={this.denominationsChangeHandler}/>        
+          <Denominations onChange={this.denominationsChangeHandler}/> 
+          <hr />
+          <CloseoutTable closeoutRows={this.state.closeoutRows}/>       
         </div>
       );
   }
@@ -60,10 +68,22 @@ const Closeout = React.createClass({
 const printArr = function (arr){
   var string = "";
   arr.forEach( (item) => {
-    string += item.currency + " => " + item.qty + " "
+    string += item.currency + "," + item.qty + "," + item.product + "]"
   });
   return string;
 }
+
+const getSum = function (a){
+  var sum = 0.00
+  a.split("]").forEach((item) => { 
+       if(item !== ""){
+         sum += parseInt(item.split(",")[2]);
+       }
+    }
+  );
+  return sum;
+}
+
 
 
 const Denominations = React.createClass({
@@ -170,6 +190,72 @@ const Store = React.createClass({
     },
 });
 
+const CloseoutTable = React.createClass({
+    render: function(){
+      const closeouttablerows = this.props.closeoutRows.map(  (item, index) => {
+           //console.log(printArr(item.denominations));
+           //var denomsStr = printArr(item.denominations);
+           var denomsStr = item.denominations;
+           return(
+              <CloseoutThs store={item.store} date="mm/dd/yyyy" posted={item.posted} counted="999.00" denominations={denomsStr} key={index}/>
+            );
+      });
+      return (
+        <table className="table table-striped">
+          <thead>
+            <tr>
+              <th>Store</th>
+              <th>Date</th>
+              <th>Posted</th>
+              <th>Counted</th>
+              <th>Denominations</th>
+            </tr>
+          </thead>
+          <tbody>
+              {closeouttablerows}
+          </tbody>
+        </table>
+      );
+    }
+});
+
+const CloseoutThs = React.createClass({
+    editClickHandler: function(){
+      console.log('Edit icon is clicked ' + this.props.store + " " + this.props.date);
+    },
+    removeClickHandler: function(store, date){
+      console.log('Remove icon is clicked ' + this.props.store + " " + this.props.date);
+    },
+    render: function(){
+      //alert("store = " + this.props.store + " posted = " + this.props.posted);
+      return (
+          <tr>
+             <th>
+               {this.props.store}
+             </th>
+             <th>
+               {this.props.date}
+             </th>
+             <th>
+               {this.props.posted}
+             </th>
+             <th>
+               {getSum(this.props.denominations)}
+             </th>
+             <th>
+               {this.props.denominations}
+             </th>
+             <th>
+                <span className="glyphicon glyphicon-edit" onClick={this.editClickHandler}></span> 
+                <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <span className="glyphicon glyphicon-remove" onClick={this.removeClickHandler}></span> 
+             </th>
+          </tr>
+        );
+    }
+});
+
+
 const AmountInput = React.createClass({
     render: function(){
         return(
@@ -185,7 +271,7 @@ const PostedCloseoutInput = React.createClass({
     getInitialState: function(){
       return(
           {
-            amount: -100.00
+            amount: 0.00
           }
         );
     },
