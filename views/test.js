@@ -5,8 +5,8 @@ const Closeout = React.createClass({
      console.log("store = " + store);
      return {
        selectedStore: store,
-       posted: 0.00,
-       date: today,
+       posted: -999.99,
+       date: '',
        closeoutRows: [],
        closeoutCurrentRow: {},
        denominations: []
@@ -19,13 +19,43 @@ const Closeout = React.createClass({
      this.state.date = closeoutdate;
      console.log('closeoutDateChangeHandler ==> ' + closeoutdate + " this.state.date = " + this.state.date);
   },
+  validateEntries: function(){
+    console.log("validating entries");
+    var retValue = true;
+    console.log("this.state.selectedStore = " + this.state.selectedStore);
+    if(this.state.date !== '' && this.state.posted >= 0.00 && this.state.denominations.length > 0
+        && this.state.selectedStore !== 'Select'){
+      //console.log("returning true " + this.state.date + "  " + this.state.posted);
+      retValue = true;
+    }else{
+      console.log("returning false");
+      retValue = false
+    }
+    return retValue;
+  },
+  clearEntries: function(){
+     var store = Data[0].name;
+     console.log("clearing the entries");
+     this.setState({
+       selectedStore: store,
+       posted: -999.99,
+       date: '',
+       closeoutCurrentRow: {},
+       denominations: []
+     });
+  },
   submitClickHandler: function(){
-    console.log("submitClickHandler => " + printArr(this.state.denominations));
-    var ttt = printArr(this.state.denominations);
-    var temp = {store: this.state.selectedStore, posted: this.state.posted, denominations: this.state.denominations};
-    this.setState( { closeoutCurrentRow: temp} );
-    var temp2 = {store: this.state.selectedStore, date: this.state.date, posted: this.state.posted, denominations: ttt};
-    this.state.closeoutRows.push(temp2)
+    if(this.validateEntries() === true){
+      console.log("submitClickHandler => " + printArr(this.state.denominations));
+      var ttt = printArr(this.state.denominations);
+      var temp = {store: this.state.selectedStore, posted: this.state.posted, denominations: this.state.denominations};
+      this.setState( { closeoutCurrentRow: temp} );
+      var temp2 = {store: this.state.selectedStore, date: this.state.date, posted: this.state.posted, denominations: ttt};
+      this.state.closeoutRows.push(temp2);
+      this.clearEntries();
+    }else{
+      alert("Invalid " + this.state.date);
+    }
   },
   changeStoreHandler: function(event){
     this.setState({ selectedStore: event.target.value});
@@ -54,7 +84,7 @@ const Closeout = React.createClass({
                 </div>
               </div>
               <div className="col-md-3">
-                 <CloseoutDateInput label="CloseoutDate" onChange={this.closeoutDateChangeHandler}/>
+                 <CloseoutDateInput label="CloseoutDate" value={this.state.date} onChange={this.closeoutDateChangeHandler}/>
               </div>
               <div className="col-md-3">
                   <PostedCloseoutInput label="Posted:" onChange={this.postedChangeHandler}/>
@@ -66,6 +96,7 @@ const Closeout = React.createClass({
           <hr/> 
           <Denominations onChange={this.denominationsChangeHandler}/> 
           <hr />
+          
           <CloseoutTable closeoutRows={this.state.closeoutRows}/>       
         </div>
       );
@@ -212,6 +243,9 @@ const Store = React.createClass({
 });
 
 const CloseoutTable = React.createClass({
+    exportExcelClickHandler: function(event){
+      return ExcellentExport.excel(document.getElementById("closeoutstable"), 'closeoutstable', 'closeouts');
+    },
     render: function(){
       const closeouttablerows = this.props.closeoutRows.map(  (item, index) => {
            //console.log(printArr(item.denominations));
@@ -222,20 +256,23 @@ const CloseoutTable = React.createClass({
             );
       });
       return (
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>Store</th>
-              <th>Date</th>
-              <th>Posted</th>
-              <th>Counted</th>
-              <th>Denominations</th>
-            </tr>
-          </thead>
-          <tbody>
-              {closeouttablerows}
-          </tbody>
-        </table>
+        <div className="container">
+          <a download="closeout.xls" href="#" onClick={this.exportExcelClickHandler}>Export to Excel</a>
+          <table className="table table-striped" id="closeoutstable">
+            <thead>
+              <tr>
+                <th>Store</th>
+                <th>Date</th>
+                <th>Posted</th>
+                <th>Counted</th>
+                <th>Denominations</th>
+              </tr>
+            </thead>
+            <tbody>
+                {closeouttablerows}
+            </tbody>
+          </table>
+        </div>
       );
     }
 });
@@ -316,7 +353,7 @@ const CloseoutDateInput = React.createClass({
       var today = getToday();
       return(
           {
-            Date: today
+            Date: ''
           }
         );
     },
@@ -328,7 +365,7 @@ const CloseoutDateInput = React.createClass({
         return(
             <div class="input-group">
                 <span class="input-group-addon">{this.props.label}</span>
-                <input type="text" class="form-control" placeholder="close out date" value={this.state.date} onChange={this.handleChange}/>
+                <input type="text" class="form-control" placeholder="close out date"  onChange={this.handleChange}/>
             </div>
         );
     },
