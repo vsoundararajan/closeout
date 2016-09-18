@@ -19,6 +19,7 @@ const Closeout = React.createClass({
                          {qty: 0, currency:   2, product: 0.00}, 
                          {qty: 0, currency:   1, product: 0.00}
                         ],
+       notes: ''
      };
   },
   postedChangeHandler: function(posted){
@@ -30,6 +31,9 @@ const Closeout = React.createClass({
   closeoutDateChangeHandler: function(closeoutdate){
      this.state.date = closeoutdate;
      //console.log('closeoutDateChangeHandler ==> ' + closeoutdate + " this.state.date = " + this.state.date);
+  },
+  notesChangeHandler: function(notes){
+     this.state.notes = notes;
   },
   validateEntries: function(){
     var retValue = true;
@@ -45,7 +49,10 @@ const Closeout = React.createClass({
   },
   clearEntries: function(){
      var store = Data[0].name;
-     console.log("clearing the entries " + store);
+     //console.log("clearing the entries " + store);
+     this.myCloseoutDateInput.handleSubmit();
+     this.myPostedCloseoutInput.handleSubmit();
+     this.myDenominations.handleSubmit();
      this.setState({
        selectedStore: store,
        posted: -999.99,
@@ -59,7 +66,8 @@ const Closeout = React.createClass({
                          {qty: 0, currency:   5, product: 0.00}, 
                          {qty: 0, currency:   2, product: 0.00}, 
                          {qty: 0, currency:   1, product: 0.00}
-                        ]
+                        ],
+       notes: '',
      });
   },
   submitClickHandler: function(){
@@ -69,7 +77,7 @@ const Closeout = React.createClass({
       var actual = getSum(ttt);
       var temp = {store: this.state.selectedStore, posted: this.state.posted, denominations: this.state.denominations};
       this.setState( { closeoutCurrentRow: temp} );
-      var temp2 = {id: (this.state.closeoutRows.length + 1), store: this.state.selectedStore, date: this.state.date, posted: this.state.posted, denominations: ttt, actual: actual};
+      var temp2 = {id: (this.state.closeoutRows.length + 1), store: this.state.selectedStore, date: this.state.date, posted: this.state.posted, denominations: ttt, actual: actual, notes: this.state.notes};
       this.state.closeoutRows.push(temp2);
       this.clearEntries();
     }else{
@@ -103,19 +111,20 @@ const Closeout = React.createClass({
                 </div>
               </div>
               <div className="col-md-3">
-                 <CloseoutDateInput label="CloseoutDate" value={this.state.date} onChange={this.closeoutDateChangeHandler}/>
+                 <CloseoutDateInput label="CloseoutDate" value={this.state.date} onChange={this.closeoutDateChangeHandler} ref={(ref) => this.myCloseoutDateInput = ref}/>
               </div>
               <div className="col-md-3">
-                  <PostedCloseoutInput label="Posted:" onChange={this.postedChangeHandler}/>
+                  <PostedCloseoutInput label="Posted:" onChange={this.postedChangeHandler} ref={(ref) => this.myPostedCloseoutInput = ref}/>
               </div>               
           </div>
           <hr/> 
-          <Denominations onChange={this.denominationsChangeHandler} initvalue={this.state.emptydenominations}/> 
+          <Denominations onChange={this.denominationsChangeHandler} initvalue={this.state.emptydenominations} ref={(ref) => this.myDenominations = ref}/> 
           <hr />
           <div className="col-md-3">
               <button className="btn btn-danger" onClick={this.submitClickHandler}>Submit</button>
           </div> 
           <br />
+          <CloseoutDateInput label="Notes:"  onChange={this.notesChangeHandler}/>
           <hr />
           <PostedCloseoutInput label="FileName:" onChange={this.filenameChangeHandler}/>
           <BootstrapTable data={this.state.closeoutRows} striped={true} hover={true} exportCSV={true} csvFileName={this.state.filename}>
@@ -125,6 +134,7 @@ const Closeout = React.createClass({
             <TableHeaderColumn dataField="posted" isKey={false} >Posted</TableHeaderColumn>
             <TableHeaderColumn dataField="actual" isKey={false} >Counted</TableHeaderColumn>
             <TableHeaderColumn dataField="denominations" isKey={false}>Denominations</TableHeaderColumn>
+            <TableHeaderColumn dataField="notes" isKey={false}>Notes</TableHeaderColumn>
          </BootstrapTable>     
         </div>
       );
@@ -167,7 +177,17 @@ const getToday = function (){
 }
 
 const Denominations = React.createClass({
-   
+    handleSubmit: function(){
+      console.log("handleSubmit of Denominations");
+      this.setState({denominations: [{qty: 0, currency: 100, product: 0.00}, 
+                         {qty: 0, currency:  50, product: 0.00}, 
+                         {qty: 0, currency:  20, product: 0.00}, 
+                         {qty: 0, currency:  10, product: 0.00}, 
+                         {qty: 0, currency:   5, product: 0.00}, 
+                         {qty: 0, currency:   2, product: 0.00}, 
+                         {qty: 0, currency:   1, product: 0.00}
+                        ], total: 0.00})
+    },
     handleQtyChange: function (event){
       //alert(event.target.value);
       var total = 0.00;
@@ -198,7 +218,7 @@ const Denominations = React.createClass({
                 <div className="well">
                     <div className="col-sm-3"><input type="number" id={this.state.denominations[0].currency} value={this.state.denominations[0].qty} onChange={this.handleQtyChange}/></div>
                     <div className="col-sm-1">X</div>
-                    <div className="col-sm-3"><input type="number" value={this.state.denominations[0].currency} /></div>
+                    <div className="col-sm-3"><label>{this.state.denominations[0].currency} </label></div>
                     <div className="col-sm-1">=</div>
                     <div className="col-sm-4"><input type="number" value={this.state.denominations[0].product} /></div>
                 </div>
@@ -282,6 +302,9 @@ const AmountInput = React.createClass({
 });
 
 const PostedCloseoutInput = React.createClass({
+    handleSubmit: function(){
+      this.setState({amount: 0.00});
+    },
     getInitialState: function(){
       return(
           {
@@ -305,6 +328,9 @@ const PostedCloseoutInput = React.createClass({
 
 
 const CloseoutDateInput = React.createClass({
+    handleSubmit: function() {
+     this.setState({Date: ''});
+    },
     getInitialState: function(){
       var today = getToday();
       return(
@@ -321,7 +347,7 @@ const CloseoutDateInput = React.createClass({
         return(
             <div class="input-group">
                 <span class="input-group-addon">{this.props.label}</span>
-                <input type="text" class="form-control" placeholder="close out date"  onChange={this.handleChange} />
+                <input type="text" class="form-control" placeholder="close out date"  value={this.state.Date} onChange={this.handleChange} />
             </div>
         );
     },
@@ -329,7 +355,7 @@ const CloseoutDateInput = React.createClass({
 
 
 
-ReactDOM.render(
+var closeoutInstance = ReactDOM.render(
     <Closeout />,
     document.getElementById('content')
 );
